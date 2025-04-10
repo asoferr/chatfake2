@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WhatsApp Simulado</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      background-color: #f0f2f5;
+    }
+
+    .sidebar {
+      width: 30%;
+      background-color: #fff;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .sidebar::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 10px;
+    }
+    
+
+    .sidebar h2 {
+      background-color: #128C7E;
+      color: white;
+      padding: 15px;
+      font-size: 1.2rem;
+    }
+
+    .chat-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .chat-list li {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      gap: 10px;
+      transition: background-color 0.2s;
+    }
+    
+    
+
+    .chat-list li:hover {
+      background-color: #f5f5f5;
+    }
+
+    .chat-list li.active-chat {
+      background-color: #e6f2f0;
+    }
+    
+    .avatar {
+      width: 40px;
+      height: 40px;
+      background-color: #ccc;
+      border-radius: 50%;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .chat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-name {
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    .last-message {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+    
+
+    .main-chat {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+      background-color: #e5ddd5;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background-color: #128C7E;
+      color: white;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .icon-button:hover {
+      opacity: 0.8;
+    }
+
+    .chat-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .chat-title {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .mensagens {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mensagem-recebida, .mensagem-enviada {
+      display: flex;
+      margin-bottom: 10px;
+      max-width: 80%;
+      position: relative;
+    }
+    
+    .mensagem-recebida {
+      justify-content: flex-start;
+      align-self: flex-start;
+    }
+    
+    .mensagem-enviada {
+      justify-content: flex-end;
+      align-self: flex-end;
+    }
+    
+    .bubble {
+      background-color: #dcf8c6;
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      position: relative;
+      word-wrap: break-word;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .mensagem-recebida .bubble {
+      background-color: #ffffff;
+    }
+    
+    .bubble .text {
+      margin-bottom: 18px;
+    }
+    
+    .bubble .timestamp {
+      font-size: 10px;
+      color: #666;
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+    }
+    
+    /* Biquinho lado esquerdo (mensagem recebida) */
+    .mensagem-recebida .bubble::after {
+      content: "";
+      position: absolute;
+      left: -5px;
+      top: 10px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-right: 8px solid #fff;
+      border-bottom: 8px solid transparent;
+    }
+    
+    /* Biquinho lado direito (mensagem enviada) */
+    .mensagem-enviada .bubble::after {
+      content: "";
+      position: absolute;
+      right: -5px;
+      top: 10px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-left: 8px solid #dcf8c6;
+      border-bottom: 8px solid transparent;
+    }
+    .input-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background-color: #f0f2f5;
+      border-top: 1px solid #ccc;
+    }
+    
+    .input-container input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+    }
+    
+    .input-container button {
+      padding: 10px 15px;
+      border: none;
+      background-color: #128C7E;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .input-container button:hover {
+      background-color: #075e54;
+    }
+    
+    form {
+      margin: 0;
+    }
+    
+    
+    
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Conversas</h2>
+    <ul class="chat-list">
+      <li class="active-chat">
+        <img class="avatar" src="https://avatars.githubusercontent.com/u/166892951?s=400&u=223218d47ad9f211cee0c019796148551863aa24&v=4" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Grupo de 4</div>
+          <div class="last-message">laurinha do bts💜: kkkkkkkk</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://enotas.com.br/blog/wp-content/uploads/2021/03/suporte-t%C3%A9cnico.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Suporte Técnico</div>
+          <div class="last-message">Chamado #2317 resolvido</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/10612/10612410.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Recursos Humanos</div>
+          <div class="last-message">Enviei o formulário de feedback</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://blog.quantosobra.com.br/static/396019dc0dfaa8c0ea0f7f206028cf8a/27c85/capa-controle-financeiro-quantosobra.webp" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Financeiro - Cobranças</div>
+          <div class="last-message">Nota fiscal enviada</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://www.projectbuilder.com.br/wp-content/uploads/2017/09/101118-revisor-entregar-ate-2806-quartafeira-16h-entenda-o-papel-das-normas-iso-no-gerenciamento-de-projetos-1.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Gerência de Projetos</div>
+          <div class="last-message">Sprint 9 concluída com sucesso</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://mectelecom.com.br/blog/wp-content/uploads/2018/04/TI.png-2.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">TI Corporativo</div>
+          <div class="last-message">Backup semanal finalizado</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://img.freepik.com/vetores-premium/entrega-e-logistica_18591-39782.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Logística e Entregas</div>
+          <div class="last-message">Entrega prevista para amanhã</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://img.freepik.com/fotos-premium/retrato-de-uma-imagem-gerada-por-ia-de-homem_1025900-164.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">João Pereira - Jurídico</div>
+          <div class="last-message">Contrato revisado e assinado</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://midias.correiobraziliense.com.br/_midias/jpg/2023/07/05/800x600/1_brazil_mulher_mais_bonita-28437659.jpg?20230705183303?20230705183303" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Patrícia Silva - CEO</div>
+          <div class="last-message">Alinhamos os pontos no board</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://setcesp.org.br/wp-content/uploads/2019/08/treinamento.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Treinamento Interno</div>
+          <div class="last-message">Link da próxima sessão disponível</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://v20.com.br/wp-content/uploads/2017/05/xxxxxxxxxxxxxxxx.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Time de Marketing</div>
+          <div class="last-message">Campanha liberada no Meta Ads</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://sebrae.com.br/Sebrae/Portal%20Sebrae/UFs/AP/Imagens/consultor%20mar%C3%A7o.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Consultoria Externa</div>
+          <div class="last-message">Reunião agendada para quarta</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://omnibees.com/wp-content/uploads/2022/04/LogoParceiros_07.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Parceria: SoftTech Ltda</div>
+          <div class="last-message">Proposta enviada por e-mail</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://itixti.com.br/wp-content/uploads/2023/02/devops.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Lucas M. - DevOps</div>
+          <div class="last-message">Pipeline ajustado</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://abraweb.com.br/assets/dashboard/uploads/article/designthinking.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Fernanda Torres - Design</div>
+          <div class="last-message">Novo layout no Figma</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://www.twsolutions.com.br/SEO-img/informacoes/sistema-atendimento-sac-01.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Atendimento - SAC</div>
+          <div class="last-message">Cliente retornou com dúvida no item 4</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://cdiastecnologia.com.br/wp-content/uploads/2021/01/garantia-de-qualidade.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Controle de Qualidade</div>
+          <div class="last-message">Relatório de auditoria finalizado</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://globalfinanceiro.com.br/wp-content/uploads/2016/06/contabilidade-necessaria-global-financeiro-plataforma-gestao-financeira.webp" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Felipe Rocha - Contabilidade</div>
+          <div class="last-message">Balanço de março já disponível</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://miro.medium.com/v2/resize:fit:1400/1*YAqsmNqmhCkjX4Y0N3f5kQ.jpeg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Time de Dados</div>
+          <div class="last-message">Dashboard atualizado no Power BI</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWBTd_M5I5eWiRQ7EumaQr9TtU4RsPTqTmIA&s" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Cliente: Agroplan</div>
+          <div class="last-message">Precisamos ajustar o cronograma</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSepFPIDJU0FUP1kCFvKZzaIJjhx8Gu4hxtVw&s" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Fornecedor: PrintCorp</div>
+          <div class="last-message">Orçamento enviado por e-mail</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://vidalink.com.br/wp-content/uploads/2023/10/tendencias-de-RH_Prancheta-1.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Juliana Matos - RH</div>
+          <div class="last-message">Entrevistas agendadas para sexta</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://d1yjjnpx0p53s8.cloudfront.net/styles/logo-thumbnail/s3/032015/logo_alfa.jpg?itok=9vCvKTQx" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Transportadora Alfa</div>
+          <div class="last-message">Nota fiscal 14793 coletada com sucesso</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://octoti.com.br/wp-content/uploads/sites/2/2021/09/banner59-octo-o-que-faz-um-desenvolvedor-web-1024x638.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Desenvolvimento Web</div>
+          <div class="last-message">Push enviado para revisão de código</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://storage.googleapis.com/atados-v3/user-uploaded/images/473a4201-7a3a-468a-84b5-87e45b159dcb.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Serviços Gerais</div>
+          <div class="last-message">Limpeza do auditório finalizada</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://accelere.se/wp-content/uploads/2020/05/WhatsApp-Image-2020-05-20-at-15.40.31.jpeg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Equipe de Vendas</div>
+          <div class="last-message">Fechamos contrato com o novo cliente!</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://www.pontotel.com.br/local/wp-content/uploads/2023/01/recrutamento-e-selecao-de-profissionais-de-ti.webp" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Recrutamento TI</div>
+          <div class="last-message">3 candidatos confirmados para a vaga</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://vanessaabitbolpsi.com.br/wp-content/uploads/2023/10/vanessa-abitol-imagem-interna-Mentoria-para-psicologos.jpg" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Supervisão Interna</div>
+          <div class="last-message">Checklist de segurança atualizado</div>
+        </div>
+        <li class="active-chat">
+          <img class="avatar" src="https://vidadeproduto.com.br/wp-content/uploads/2019/11/guia-completo-time-produto.png" alt="Grupo de 4">
+        <div class="chat-info">
+          <div class="chat-name">Time de Produto</div>
+          <div class="last-message">Reunião agendada: roadmap Q3</div>
+        </div>
+      </li>
+      <li class="active-chat">
+        <img class="avatar" src="https://www.bizneo.com/blog/wp-content/uploads/2024/07/Consultoria-RH.png" alt="Grupo de 4">
+          <div class="chat-info">
+          <div class="chat-name">Consultoria de RH</div>
+          <div class="last-message">Treinamento "Liderança Estratégica" agendado</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="main-chat">
+    <div class="header">
+      <div style="display: flex; align-items: center;">
+        <img class="avatar" src="https://avatars.githubusercontent.com/u/166892951?s=400&u=223218d47ad9f211cee0c019796148551863aa24&v=4" alt="Grupo de 4">
+
+        <span class="chat-title">Grupo de 4</span>
+      </div>
+      <div class="header-buttons">
+        <button class="icon-button" title="Chamada de voz">📞</button>
+        <button class="icon-button" title="Chamada de vídeo">📹</button>
+      </div>
+    </div>
+
+    <div class="mensagens" id="mensagens">
+      
+    </div>
+
+    <form id="form" class="input-container">
+      <input id="nome" type="text" placeholder="Seu nome" required />
+      <input id="mensagem" type="text" placeholder="Digite sua mensagem..." required />
+      <button type="button" class="icon-button" title="Gravar áudio">🎤</button>
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const nomeInput = document.getElementById('nome');
+    const mensagemInput = document.getElementById('mensagem');
+    const mensagens = document.getElementById('mensagens');
+    
+    document.getElementById('form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const nome = nomeInput.value.trim();
+      const mensagem = mensagemInput.value.trim();
+    
+      if (nome && mensagem) {
+        socket.emit('chat message', { nome, mensagem });
+        mensagemInput.value = '';
+      }
+    
+      nomeInput.disabled = true;
+    });
+    
+    socket.on('chat message', function (dados) {
+      const li = document.createElement('div');
+      const isSender = dados.nome === nomeInput.value;
+      li.className = isSender ? 'mensagem-enviada' : 'mensagem-recebida';
+    
+      const now = new Date();
+      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+      li.innerHTML = `
+        <div class="bubble">
+          <div class="text"><strong>${dados.nome}:</strong> ${dados.mensagem}</div>
+          <div class="timestamp">${time}</div>
+        </div>
+      `;
+    
+      mensagens.appendChild(li);
+      mensagens.scrollTop = mensagens.scrollHeight;
+    });
+    
+    // Ativação visual do contato na lista lateral
+    document.querySelectorAll('.chat-list li').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.chat-list li').forEach(i => i.classList.remove('active-chat'));
+        item.classList.add('active-chat');
+      });
+    });
+    
+        
+  </script>
+</body>
+</html>
